@@ -31,32 +31,32 @@ import com.google.inject.matcher.Matcher;
 
 public final class Matchers {
 
-	public static Matcher<Method> resourceMethod() {
+//	public static Matcher<Method> resourceMethod() {
+//
+//		return new AbstractMatcher<Method>() {
+//			@Override
+//			public boolean matches(Method m) {
+//				return isResourceMethod(m);
+//
+//			}
+//		};
+//	}
 
-		return new AbstractMatcher<Method>() {
-			@Override
-			public boolean matches(Method m) {
-				return isResourceMethod(m);
-
-			}
-		};
-	}
-
-	public static Matcher<Method> resourceMethod(
+	public static Matcher<Method> resourceMethod(final Object objInstance,
 			final Class<? extends Annotation> annotation) {
 
 		return new AbstractMatcher<Method>() {
 			@Override
 			public boolean matches(Method m) {
-				return isResourceMethod(m)
-						&& getAnnotatedMethod(m).getAnnotation(annotation) != null;
+				return isResourceMethod(objInstance, m)
+						&& getAnnotatedMethod(objInstance.getClass(), m).getAnnotation(annotation) != null;
 
 			}
 		};
 	}
 
-	private static boolean isResourceMethod(Method m) {
-		final Method annotatedMethod = getAnnotatedMethod(m);
+	private static boolean isResourceMethod(Object objInstance, Method m) {
+		final Method annotatedMethod = getAnnotatedMethod(objInstance.getClass(), m);
 
 		final int mod = m.getModifiers();
 		if (!isPublic(mod) || isStatic(mod))

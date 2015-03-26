@@ -26,14 +26,14 @@ import static com.google.inject.name.Names.named;
 
 import java.lang.reflect.Type;
 
+import javax.ws.rs.container.ContainerRequestFilter;
+import javax.ws.rs.container.ContainerResponseFilter;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.MessageBodyReader;
 import javax.ws.rs.ext.MessageBodyWriter;
 
 import org.apache.cxf.interceptor.Interceptor;
 import org.apache.cxf.jaxrs.JAXRSServerFactoryBean;
-import org.apache.cxf.jaxrs.ext.RequestHandler;
-import org.apache.cxf.jaxrs.ext.ResponseHandler;
 import org.apache.cxf.jaxrs.lifecycle.ResourceProvider;
 import org.apache.cxf.service.invoker.Invoker;
 
@@ -257,7 +257,7 @@ public abstract class CXFServerModule implements Module {
 			checkState(!subinjectionEnabled,
 					"Subresource injection already enabled");
 			final SubresourceInterceptor interceptor = new SubresourceInterceptor();
-			binder().bindInterceptor(any(), resourceMethod(Injected.class),
+			binder().bindInterceptor(any(), resourceMethod(any(), Injected.class),
 					interceptor);
 
 			binder().requestInjection(interceptor);
@@ -386,29 +386,29 @@ public abstract class CXFServerModule implements Module {
 	 */
 	protected abstract void configure();
 
-	protected final void handleRequest(Class<? extends RequestHandler> type) {
+	protected final void handleRequest(Class<? extends ContainerRequestFilter> type) {
 		provide(type);
 	}
 
-	protected final void handleRequest(Key<? extends RequestHandler> key) {
+	protected final void handleRequest(Key<? extends ContainerRequestFilter> key) {
 		provide(key);
 	}
 
 	protected final void handleRequest(
-			TypeLiteral<? extends RequestHandler> type) {
+			TypeLiteral<? extends ContainerRequestFilter> type) {
 		provide(type);
 	}
 
-	protected final void handleResponse(Class<? extends ResponseHandler> type) {
+	protected final void handleResponse(Class<? extends ContainerResponseFilter> type) {
 		provide(type);
 	}
 
-	protected final void handleResponse(Key<? extends ResponseHandler> key) {
+	protected final void handleResponse(Key<? extends ContainerResponseFilter> key) {
 		provide(key);
 	}
 
 	protected final void handleResponse(
-			TypeLiteral<? extends ResponseHandler> type) {
+			TypeLiteral<? extends ContainerResponseFilter> type) {
 		provide(type);
 	}
 

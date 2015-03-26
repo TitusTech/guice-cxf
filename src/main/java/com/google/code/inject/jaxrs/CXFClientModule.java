@@ -54,7 +54,6 @@ import com.google.inject.binder.ScopedBindingBuilder;
 import com.google.inject.multibindings.Multibinder;
 import com.google.inject.name.Names;
 import java.rmi.ServerException;
-import org.apache.cxf.jaxrs.client.ClientWebApplicationException;
 
 public abstract class CXFClientModule implements Module {
 
@@ -127,14 +126,6 @@ public abstract class CXFClientModule implements Module {
 				} catch (final InvocationTargetException e) {
 					throw e.getCause();
 				}
-			} catch (final ClientWebApplicationException e) {
-				final Class<?>[] types = method.getExceptionTypes();
-				for (final Class<?> type : types) {
-					final Throwable cause = e.getCause();
-					if (type.isInstance(cause))
-						throw cause;
-				}
-				throw e;
 			} catch (final ServerException e) {
 				// we need to wrap it otherwise CXF server might report them as this machine's fault
 				throw new RuntimeException("Remote server error", e);
