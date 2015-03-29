@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 Jakub Bocheński (kuba.bochenski@gmail.com)
+ * Copyright 2012 Jakub BocheÅ„ski (kuba.bochenski@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,32 +31,31 @@ import com.google.inject.matcher.Matcher;
 
 public final class Matchers {
 
-//	public static Matcher<Method> resourceMethod() {
-//
-//		return new AbstractMatcher<Method>() {
-//			@Override
-//			public boolean matches(Method m) {
-//				return isResourceMethod(m);
-//
-//			}
-//		};
-//	}
-
-	public static Matcher<Method> resourceMethod(final Object objInstance,
-			final Class<? extends Annotation> annotation) {
+	public static Matcher<Method> resourceMethod() {
 
 		return new AbstractMatcher<Method>() {
 			@Override
 			public boolean matches(Method m) {
-				return isResourceMethod(objInstance, m)
-						&& getAnnotatedMethod(objInstance.getClass(), m).getAnnotation(annotation) != null;
+				return isResourceMethod(m);
 
 			}
 		};
 	}
 
-	private static boolean isResourceMethod(Object objInstance, Method m) {
-		final Method annotatedMethod = getAnnotatedMethod(objInstance.getClass(), m);
+	public static Matcher<Method> resourceMethod(final Class<? extends Annotation> annotation) {
+
+		return new AbstractMatcher<Method>() {
+			@Override
+			public boolean matches(Method m) {
+				return isResourceMethod(m)
+						&& getAnnotatedMethod(m.getDeclaringClass(), m).getAnnotation(annotation) != null;
+
+			}
+		};
+	}
+
+	private static boolean isResourceMethod(Method m) {
+		final Method annotatedMethod = getAnnotatedMethod(m.getDeclaringClass(), m);
 
 		final int mod = m.getModifiers();
 		if (!isPublic(mod) || isStatic(mod))

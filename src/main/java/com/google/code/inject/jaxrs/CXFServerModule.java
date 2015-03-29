@@ -257,7 +257,7 @@ public abstract class CXFServerModule implements Module {
 			checkState(!subinjectionEnabled,
 					"Subresource injection already enabled");
 			final SubresourceInterceptor interceptor = new SubresourceInterceptor();
-			binder().bindInterceptor(any(), resourceMethod(any(), Injected.class),
+			binder().bindInterceptor(any(), resourceMethod(Injected.class),
 					interceptor);
 
 			binder().requestInjection(interceptor);
