@@ -15,12 +15,12 @@
  */
 package com.google.code.inject.jaxrs;
 
-import static com.google.inject.Scopes.SINGLETON;
-import static com.google.inject.internal.util.$Preconditions.checkState;
-import static com.google.inject.multibindings.Multibinder.newSetBinder;
-import static java.lang.reflect.Proxy.newProxyInstance;
-import static java.util.Collections.unmodifiableSet;
-import static org.apache.cxf.jaxrs.JAXRSBindingFactory.JAXRS_BINDING_ID;
+import static com.google.common.base.Preconditions.*;
+import static com.google.inject.Scopes.*;
+import static com.google.inject.multibindings.Multibinder.*;
+import static java.lang.reflect.Proxy.*;
+import static java.util.Collections.*;
+import static org.apache.cxf.jaxrs.JAXRSBindingFactory.*;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationHandler;
@@ -28,6 +28,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
+import java.rmi.ServerException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
@@ -53,14 +54,13 @@ import com.google.inject.TypeLiteral;
 import com.google.inject.binder.ScopedBindingBuilder;
 import com.google.inject.multibindings.Multibinder;
 import com.google.inject.name.Names;
-import java.rmi.ServerException;
 
 public abstract class CXFClientModule implements Module {
 
 	protected final class UrlBindingBuilder {
 		private final Key<String> url;
 
-		private UrlBindingBuilder(Key<String> url) {
+		private UrlBindingBuilder(final Key<String> url) {
 			this.url = url;
 		}
 
@@ -68,23 +68,27 @@ public abstract class CXFClientModule implements Module {
 			final Type[] arguments = new Type[] { resource };
 
 			binder.bind(new ParametrizedType(TypeAndUrl.class) {
-				public Type getOwnerType() {
+				@Override
+                public Type getOwnerType() {
 					return CXFClientModule.class;
 				}
 
-				public Type[] getActualTypeArguments() {
+				@Override
+                public Type[] getActualTypeArguments() {
 					return arguments;
 				}
 			}.asKey())
-					.toInstance(new TypeAndUrl<T>(resource, url, wrapProxies));
+					.toInstance(new TypeAndUrl<>(resource, url, wrapProxies));
 
 			return binder.bind(resource).toProvider(
 					new ParametrizedType(ClientProviderWrapper.class) {
-						public Type getOwnerType() {
+						@Override
+                        public Type getOwnerType() {
 							return CXFClientModule.class;
 						}
 
-						public Type[] getActualTypeArguments() {
+						@Override
+                        public Type[] getActualTypeArguments() {
 							return arguments;
 						}
 					}.<Provider<T>> asKey());
@@ -98,7 +102,7 @@ public abstract class CXFClientModule implements Module {
 
 		@Inject
 		protected JAXRSClientFactoryBeanProvider(
-				@JaxRsProvider Set<MessageBodyReader<?>> readers) {
+				@JaxRsProvider final Set<MessageBodyReader<?>> readers) {
 			this.readers = readers;
 		}
 
@@ -113,12 +117,12 @@ public abstract class CXFClientModule implements Module {
 	private static final class ClientWrapper<T> implements InvocationHandler {
 		private final T resource;
 
-		public ClientWrapper(T resource) {
+		public ClientWrapper(final T resource) {
 			this.resource = resource;
 		}
 
 		@Override
-		public Object invoke(Object proxy, Method method, Object[] args)
+		public Object invoke(final Object proxy, final Method method, final Object[] args)
 				throws Throwable {
 			try {
 				try {
@@ -134,7 +138,7 @@ public abstract class CXFClientModule implements Module {
 
 	}
 
-	public static <T> T unwrapClient(T object) {
+	public static <T> T unwrapClient(final T object) {
 		final InvocationHandler handler = Proxy.getInvocationHandler(object);
 
 		if (handler instanceof ClientWrapper) {
@@ -151,8 +155,8 @@ public abstract class CXFClientModule implements Module {
 		private final Class<T> type;
 		private final boolean wrap;
 
-		protected JAXRSClientProvider(Class<T> type, String url,
-				JAXRSClientFactoryBean sf, boolean wrap) {
+		protected JAXRSClientProvider(final Class<T> type, final String url,
+				final JAXRSClientFactoryBean sf, final boolean wrap) {
 			this.type = type;
 			this.sf = sf;
 			this.wrap = wrap;
@@ -173,11 +177,13 @@ public abstract class CXFClientModule implements Module {
 		@SuppressWarnings("unchecked")
 		public T get() {
 			final T resource = sf.create(type);
-			if (wrap)
-				return (T) newProxyInstance(type.getClassLoader(),
-						new Class<?>[] { type }, new ClientWrapper<T>(resource));
-			else
-				return resource;
+			if (wrap) {
+                return (T) newProxyInstance(type.getClassLoader(),
+						new Class<?>[] { type }, new ClientWrapper<>(resource));
+            }
+            else {
+                return resource;
+            }
 		}
 	}
 
@@ -187,7 +193,7 @@ public abstract class CXFClientModule implements Module {
 		private final Key<String> url;
 		private final boolean wrap;
 
-		public TypeAndUrl(Class<T> type, Key<String> url, boolean wrap) {
+		public TypeAndUrl(final Class<T> type, final Key<String> url, final boolean wrap) {
 			super();
 			this.type = type;
 			this.url = url;
@@ -210,8 +216,8 @@ public abstract class CXFClientModule implements Module {
 	static class ClientProviderWrapper<T> extends JAXRSClientProvider<T> {
 
 		@Inject
-		protected ClientProviderWrapper(TypeAndUrl<T> key,
-				JAXRSClientFactoryBean sf, Injector i) {
+		protected ClientProviderWrapper(final TypeAndUrl<T> key,
+				final JAXRSClientFactoryBean sf, final Injector i) {
 			super(key.getType(), i.getInstance(key.getUrl()), sf, key
 					.isWrapped());
 		}
@@ -224,7 +230,7 @@ public abstract class CXFClientModule implements Module {
 	private boolean wrapProxies = false;
 
 	@Override
-	public final void configure(Binder binder) {
+	public final void configure(final Binder binder) {
 		checkState(null == this.binder, "Re-entry not allowed");
 		checkState(null == this.readers, "Re-entry not allowed");
 
@@ -235,9 +241,10 @@ public abstract class CXFClientModule implements Module {
 		try {
 			configure();
 
-			if (bindJAXRSClientFactoryBean)
-				binder.bind(JAXRSClientFactoryBean.class).toProvider(
+			if (bindJAXRSClientFactoryBean) {
+                binder.bind(JAXRSClientFactoryBean.class).toProvider(
 						JAXRSClientFactoryBeanProvider.class);
+            }
 		} finally {
 			this.binder = null;
 			this.readers = null;
@@ -249,11 +256,12 @@ public abstract class CXFClientModule implements Module {
 	@JaxRsProvider
 	@Singleton
 	private Set<MessageBodyReader<?>> provideReaders(
-			@JaxRsProvider Set<Object> providers) {
-		final HashSet<MessageBodyReader<?>> set = new HashSet<MessageBodyReader<?>>();
+			@JaxRsProvider final Set<Object> providers) {
+		final HashSet<MessageBodyReader<?>> set = new HashSet<>();
 		for (final Object provider : providers) {
-			if (provider instanceof MessageBodyReader)
-				set.add((MessageBodyReader<?>) provider);
+			if (provider instanceof MessageBodyReader) {
+                set.add((MessageBodyReader<?>) provider);
+            }
 		}
 
 		return unmodifiableSet(set);
@@ -273,23 +281,23 @@ public abstract class CXFClientModule implements Module {
 		return this;
 	}
 
-	protected final void read(Class<? extends MessageBodyReader<?>> reader) {
+	protected final void read(final Class<? extends MessageBodyReader<?>> reader) {
 		readers.addBinding().to(reader).in(SINGLETON);
 	}
 
-	protected final UrlBindingBuilder bind(Key<String> url) {
+	protected final UrlBindingBuilder bind(final Key<String> url) {
 		return new UrlBindingBuilder(url);
 	}
 
-	protected final UrlBindingBuilder bind(Class<? extends Annotation> a) {
+	protected final UrlBindingBuilder bind(final Class<? extends Annotation> a) {
 		return bind(Key.get(String.class, a));
 	}
 
-	protected final UrlBindingBuilder bind(Annotation a) {
+	protected final UrlBindingBuilder bind(final Annotation a) {
 		return bind(Key.get(String.class, a));
 	}
 
-	protected final UrlBindingBuilder bind(String name) {
+	protected final UrlBindingBuilder bind(final String name) {
 		return bind(Names.named(name));
 	}
 

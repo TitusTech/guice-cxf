@@ -15,10 +15,10 @@
  */
 package com.google.code.inject.jaxrs.scope;
 
-import static com.google.inject.internal.util.$Preconditions.checkState;
-import static java.lang.Thread.currentThread;
-import static java.util.Collections.singleton;
-import static org.apache.cxf.phase.Phase.INVOKE;
+import static com.google.common.base.Preconditions.*;
+import static java.lang.Thread.*;
+import static java.util.Collections.*;
+import static org.apache.cxf.phase.Phase.*;
 
 import java.util.Iterator;
 import java.util.concurrent.Callable;
@@ -40,11 +40,11 @@ public class GuiceInterceptorWrapper extends AbstractPhaseInterceptor<Message> {
 		final Exchange exchange;
 		volatile Thread owner;
 
-		private Context(Exchange exchange) {
+		private Context(final Exchange exchange) {
 			this.exchange = exchange;
 		}
 
-		<T> T call(Callable<T> callable) throws Exception {
+		<T> T call(final Callable<T> callable) throws Exception {
 			final Thread oldOwner = owner;
 			final Thread newOwner = currentThread();
 			checkState(oldOwner == null || oldOwner == newOwner,
@@ -65,7 +65,7 @@ public class GuiceInterceptorWrapper extends AbstractPhaseInterceptor<Message> {
 		}
 	}
 
-	private static final ThreadLocal<Context> localContext = new ThreadLocal<Context>();
+	private static final ThreadLocal<Context> localContext = new ThreadLocal<>();
 
 	private static Context getContext() {
 		final Context context = localContext.get();
@@ -90,7 +90,7 @@ public class GuiceInterceptorWrapper extends AbstractPhaseInterceptor<Message> {
 		this(new ServiceInvokerInterceptor());
 	}
 
-	public GuiceInterceptorWrapper(PhaseInterceptor<Message> delegate) {
+	public GuiceInterceptorWrapper(final PhaseInterceptor<Message> delegate) {
 		super(INVOKE);
 		setBefore(singleton(delegate.getClass().getName()));
 		this.delegate = delegate;
@@ -114,13 +114,10 @@ public class GuiceInterceptorWrapper extends AbstractPhaseInterceptor<Message> {
 				: m.getExchange();
 
 		try {
-			new Context(exchange).call(new Callable<Void>() {
-				@Override
-				public Void call() throws Exception {
-					delegate.handleMessage(m);
-					return null;
-				}
-			});
+			new Context(exchange).call(() -> {
+            	delegate.handleMessage(m);
+            	return null;
+            });
 		} catch (final Fault e) {
 			throw e;
 		} catch (final Exception e) {

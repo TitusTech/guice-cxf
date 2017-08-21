@@ -18,7 +18,7 @@ package com.google.code.inject.jaxrs.scope;
 import static com.google.code.inject.jaxrs.scope.CXFScopes.Marker.NULL;
 import static com.google.code.inject.jaxrs.scope.GuiceInterceptorWrapper.getExchange;
 import static com.google.code.inject.jaxrs.util.ScopeUtils.isCircularProxy;
-import static com.google.inject.internal.util.$Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.*;
 import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.ElementType.TYPE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;

@@ -15,8 +15,7 @@
  */
 package com.google.code.inject.jaxrs.util;
 
-import static com.google.inject.internal.util.$Preconditions.checkArgument;
-import static com.google.inject.internal.util.$Preconditions.checkState;
+import static com.google.common.base.Preconditions.*;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
@@ -42,7 +41,7 @@ public class BindingProvider<T> {
 	private Class<?> actualType;
 	private Scope scope;
 
-	public BindingProvider(Key<T> key) {
+	public BindingProvider(final Key<T> key) {
 		this.key = key;
 	}
 
@@ -66,19 +65,19 @@ public class BindingProvider<T> {
 		this.actualType = binding
 				.acceptTargetVisitor(new DefaultBindingTargetVisitor<T, Class<?>>() {
 					@Override
-					public Class<?> visit(ConstructorBinding<? extends T> b) {
+					public Class<?> visit(final ConstructorBinding<? extends T> b) {
 						return b.getConstructor().getDeclaringType()
 								.getRawType();
 					}
 
 					@Override
-					public Class<?> visit(LinkedKeyBinding<? extends T> b) {
+					public Class<?> visit(final LinkedKeyBinding<? extends T> b) {
 						return b.getLinkedKey().getTypeLiteral().getRawType();
 					}
 
 					@Override
 					public Class<?> visit(
-							ProviderBinding<? extends T> providerBinding) {
+							final ProviderBinding<? extends T> providerBinding) {
 						try {
 							// FIXME this will incorrectly return any first type variable,
 							// not necessarily that of Provider<T>
@@ -96,12 +95,13 @@ public class BindingProvider<T> {
 						}
 					}
 
-					public Class<?> visit(UntargettedBinding<? extends T> b) {
+					@Override
+                    public Class<?> visit(final UntargettedBinding<? extends T> b) {
 						return b.getKey().getTypeLiteral().getRawType();
 					}
 
 					@Override
-					protected Class<?> visitOther(Binding<? extends T> binding) {
+					protected Class<?> visitOther(final Binding<? extends T> binding) {
 						throw new ProvisionException(
 								"Unable to resolve target class for " + binding);
 					}
@@ -126,12 +126,13 @@ public class BindingProvider<T> {
 
 	public static <T> BindingProvider<T> provideBinding(final Binder binder,
 			final Key<T> key) {
-		final BindingProvider<T> binding = new BindingProvider<T>(key);
+		final BindingProvider<T> binding = new BindingProvider<>(key);
 		binder.requestInjection(binding);
 
 		binder.bind(new ParametrizedType(BindingProvider.class) {
 
-			public Type[] getActualTypeArguments() {
+			@Override
+            public Type[] getActualTypeArguments() {
 				return new Type[] { key.getTypeLiteral().getType() };
 			}
 		}.asKey()).toInstance(binding);

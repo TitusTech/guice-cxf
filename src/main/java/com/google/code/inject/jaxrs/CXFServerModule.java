@@ -15,14 +15,14 @@
  */
 package com.google.code.inject.jaxrs;
 
-import static com.google.code.inject.jaxrs.util.BindingProvider.provideBinding;
-import static com.google.code.inject.jaxrs.util.Matchers.resourceMethod;
-import static com.google.inject.Scopes.SINGLETON;
-import static com.google.inject.internal.util.$Preconditions.checkNotNull;
-import static com.google.inject.internal.util.$Preconditions.checkState;
-import static com.google.inject.matcher.Matchers.any;
-import static com.google.inject.multibindings.Multibinder.newSetBinder;
-import static com.google.inject.name.Names.named;
+import static com.google.code.inject.jaxrs.util.BindingProvider.*;
+import static com.google.code.inject.jaxrs.util.Matchers.*;
+import static com.google.common.base.Preconditions.*;
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.inject.Scopes.*;
+import static com.google.inject.matcher.Matchers.*;
+import static com.google.inject.multibindings.Multibinder.*;
+import static com.google.inject.name.Names.*;
 
 import java.lang.reflect.Type;
 
@@ -74,8 +74,6 @@ import com.google.inject.multibindings.Multibinder;
  * <pre>
  * injector.getInstance(JAXRSServerFactoryBean.class).create();
  * </pre>
- *
- * <p>
  *
  * <h3>Language elements</h3>
  * <p>
@@ -150,6 +148,7 @@ import com.google.inject.multibindings.Multibinder;
  *
  * <h3>Bindings</h3>
  *
+ * <p>
  * The most important binding provided by the CXFServerModule is the
  * <tt>JAXRSServerFactoryBean</tt>. You can use it to easily create a server by
  * doing <tt>injector.getInstance(JAXRSServerFactoryBean.class).create()</tt>
@@ -191,25 +190,27 @@ public abstract class CXFServerModule implements Module {
 			return this;
 		}
 
-		private void setDirection(String string) {
+		private void setDirection(final String string) {
 			checkState(null == this.direction, "Direction already set");
 			this.direction = string;
 		}
 
-		public void with(Class<? extends Interceptor<?>> type) {
+		public void with(final Class<? extends Interceptor<?>> type) {
 			with(Key.get(type));
 		}
 
-		public void with(Key<? extends Interceptor<?>> key) {
+		public void with(final Key<? extends Interceptor<?>> key) {
 			checkState(null != direction, "Direction must be set");
 
-			if (DIRECTION_IN.equals(direction))
-				inInterceptors.addBinding().to(key);
-			else if (DIRECTION_OUT.equals(direction))
-				outInterceptors.addBinding().to(key);
+			if (DIRECTION_IN.equals(direction)) {
+                inInterceptors.addBinding().to(key);
+            }
+            else if (DIRECTION_OUT.equals(direction)) {
+                outInterceptors.addBinding().to(key);
+            }
 		}
 
-		public void with(TypeLiteral<? extends Interceptor<?>> type) {
+		public void with(final TypeLiteral<? extends Interceptor<?>> type) {
 			with(Key.get(type));
 		}
 
@@ -223,7 +224,7 @@ public abstract class CXFServerModule implements Module {
 		private boolean subinjectionEnabled = false;
 
 		@Override
-		public ServerConfigurationBuilder atAddress(String address) {
+		public ServerConfigurationBuilder atAddress(final String address) {
 			this.address = address;
 			return this;
 		}
@@ -253,7 +254,8 @@ public abstract class CXFServerModule implements Module {
 			return this;
 		}
 
-		public ServerConfigurationBuilder withSubresourcesInjection() {
+		@Override
+        public ServerConfigurationBuilder withSubresourcesInjection() {
 			checkState(!subinjectionEnabled,
 					"Subresource injection already enabled");
 			final SubresourceInterceptor interceptor = new SubresourceInterceptor();
@@ -366,9 +368,10 @@ public abstract class CXFServerModule implements Module {
 					.toProvider(JaxRsServerFactoryBeanProvider.class)
 					.in(Singleton.class);
 
-			if (!customInvoker)
-				binder().bind(Invoker.class).to(DefaultInvoker.class)
+			if (!customInvoker) {
+                binder().bind(Invoker.class).to(DefaultInvoker.class)
 						.in(SINGLETON);
+            }
 
 		} finally {
 			binder = null;
@@ -386,29 +389,29 @@ public abstract class CXFServerModule implements Module {
 	 */
 	protected abstract void configure();
 
-	protected final void handleRequest(Class<? extends ContainerRequestFilter> type) {
+	protected final void handleRequest(final Class<? extends ContainerRequestFilter> type) {
 		provide(type);
 	}
 
-	protected final void handleRequest(Key<? extends ContainerRequestFilter> key) {
+	protected final void handleRequest(final Key<? extends ContainerRequestFilter> key) {
 		provide(key);
 	}
 
 	protected final void handleRequest(
-			TypeLiteral<? extends ContainerRequestFilter> type) {
+			final TypeLiteral<? extends ContainerRequestFilter> type) {
 		provide(type);
 	}
 
-	protected final void handleResponse(Class<? extends ContainerResponseFilter> type) {
+	protected final void handleResponse(final Class<? extends ContainerResponseFilter> type) {
 		provide(type);
 	}
 
-	protected final void handleResponse(Key<? extends ContainerResponseFilter> key) {
+	protected final void handleResponse(final Key<? extends ContainerResponseFilter> key) {
 		provide(key);
 	}
 
 	protected final void handleResponse(
-			TypeLiteral<? extends ContainerResponseFilter> type) {
+			final TypeLiteral<? extends ContainerResponseFilter> type) {
 		provide(type);
 	}
 
@@ -421,9 +424,8 @@ public abstract class CXFServerModule implements Module {
 	 *
 	 * @param type
 	 *            type to bind
-	 * @return binding builder for the invoker
 	 */
-	protected final void invokeVia(Class<? extends Invoker> type) {
+	protected final void invokeVia(final Class<? extends Invoker> type) {
 		invokeVia(Key.get(type));
 	}
 
@@ -432,9 +434,8 @@ public abstract class CXFServerModule implements Module {
 	 *
 	 * @param type
 	 *            type to bind
-	 * @return binding builder for the invoker
 	 */
-	protected final void invokeVia(Key<? extends Invoker> type) {
+	protected final void invokeVia(final Key<? extends Invoker> type) {
 		checkState(!customInvoker, "Custom invoker bound twice");
 		this.customInvoker = true;
 		binder().bind(Invoker.class).to(type).in(SINGLETON);
@@ -445,34 +446,33 @@ public abstract class CXFServerModule implements Module {
 	 *
 	 * @param type
 	 *            type to bind
-	 * @return binding builder for the invoker
 	 */
-	protected final void invokeVia(TypeLiteral<? extends Invoker> type) {
+	protected final void invokeVia(final TypeLiteral<? extends Invoker> type) {
 		invokeVia(Key.get(type));
 	}
 
-	protected final void mapExceptions(Class<? extends ExceptionMapper<?>> type) {
+	protected final void mapExceptions(final Class<? extends ExceptionMapper<?>> type) {
 		provide(type);
 	}
 
-	protected final void mapExceptions(Key<? extends ExceptionMapper<?>> key) {
+	protected final void mapExceptions(final Key<? extends ExceptionMapper<?>> key) {
 		provide(key);
 	}
 
 	protected final void mapExceptions(
-			TypeLiteral<? extends ExceptionMapper<?>> type) {
+			final TypeLiteral<? extends ExceptionMapper<?>> type) {
 		provide(type);
 	}
 
-	protected final void provide(Class<?> type) {
+	protected final void provide(final Class<?> type) {
 		provide(Key.get(type));
 	}
 
-	protected final void provide(Key<?> key) {
+	protected final void provide(final Key<?> key) {
 		providers.addBinding().to(key).in(SINGLETON);
 	}
 
-	protected final void provide(TypeLiteral<?> type) {
+	protected final void provide(final TypeLiteral<?> type) {
 		provide(Key.get(type));
 	}
 
@@ -490,7 +490,8 @@ public abstract class CXFServerModule implements Module {
 		final Key<? extends ResourceProvider> providerKey = new ParametrizedType(
 				GuicePerRequestResourceProvider.class) {
 
-			public Type[] getActualTypeArguments() {
+			@Override
+            public Type[] getActualTypeArguments() {
 				return arguments;
 			}
 		}.asKey();
@@ -514,24 +515,23 @@ public abstract class CXFServerModule implements Module {
 	/**
 	 * Bind a resource class
 	 *
-	 * @param type
-	 *            to bind
+	 * @param type to bind
 	 */
 	protected final <T> void publish(final TypeLiteral<T> type) {
 		checkNotNull(type);
 		publish(Key.get(type));
 	}
 
-	protected final void readBody(Class<? extends MessageBodyReader<?>> type) {
+	protected final void readBody(final Class<? extends MessageBodyReader<?>> type) {
 		provide(type);
 	}
 
-	protected final void readBody(Key<? extends MessageBodyReader<?>> key) {
+	protected final void readBody(final Key<? extends MessageBodyReader<?>> key) {
 		provide(key);
 	}
 
 	protected final <T extends MessageBodyReader<?> & MessageBodyWriter<?>> void readBody(
-			TypeLiteral<T> type) {
+			final TypeLiteral<T> type) {
 		provide(type);
 	}
 
@@ -545,30 +545,30 @@ public abstract class CXFServerModule implements Module {
 	}
 
 	protected final <T extends MessageBodyReader<?> & MessageBodyWriter<?>> void writeAndReadBody(
-			Class<T> type) {
+			final Class<T> type) {
 		provide(type);
 	}
 
 	protected final <T extends MessageBodyReader<?> & MessageBodyWriter<?>> void writeAndReadBody(
-			Key<T> key) {
+			final Key<T> key) {
 		provide(key);
 	}
 
 	protected final void writeAndReadBody(
-			TypeLiteral<? extends MessageBodyReader<?>> type) {
+			final TypeLiteral<? extends MessageBodyReader<?>> type) {
 		provide(type);
 	}
 
-	protected final void writeBody(Class<? extends MessageBodyWriter<?>> type) {
+	protected final void writeBody(final Class<? extends MessageBodyWriter<?>> type) {
 		provide(type);
 	}
 
-	protected final void writeBody(Key<? extends MessageBodyWriter<?>> key) {
+	protected final void writeBody(final Key<? extends MessageBodyWriter<?>> key) {
 		provide(key);
 	}
 
 	protected final void writeBody(
-			TypeLiteral<? extends MessageBodyWriter<?>> type) {
+			final TypeLiteral<? extends MessageBodyWriter<?>> type) {
 		provide(type);
 	}
 
